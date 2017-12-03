@@ -1,0 +1,25 @@
+In{
+	<int, Width>
+	<int, Height>
+	<int, Background> 0
+}
+Head{
+	borders: false
+	resizeable: false
+	size: Width, Height
+	background: Background
+}
+Body{
+	<G>{
+		Y0{
+			h: 1
+			<Text, Name1>
+			<Text, Name2>
+		}
+		Y1{
+			h: 3
+			<Text, Points1>
+			<Text, Points2>
+		}
+	}
+}

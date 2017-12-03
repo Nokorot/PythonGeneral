@@ -1,0 +1,32 @@
+<team>{
+	Panel: grey
+	TFeald{ colour: light_grey; Font: Areal }
+	Button{ colour: light_grey; Font: Areal }
+	G{ space: 5 }
+}
+<head>{
+	title: title
+	resizeable: false
+	//size: 600, 350
+	width: 600
+	height: 350
+	background: grey // blue, red, green, black, white, yellow, pink, grey, 0x030303
+}
+<body>{
+	<G>{
+		<Y>{
+		<TFeald, Name1; w:2>
+		<TFeald, Points1>
+		<Button, Fonts> Fonts
+		}
+		<Y>{
+		<TFeald, Name2; w:2>
+		<TFeald, Points2>
+		<Button, Team> Team
+		}
+		<Y>{
+		<Button, Play; w:3> Play
+		<Button, Settings> Settings
+		}
+	}
+}

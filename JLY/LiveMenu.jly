@@ -1,0 +1,28 @@
+<team> "team.jly"
+<head>{
+	title: "PointSystem np"
+	resizeable: false
+	size: 800, 600 // width = 800; height = 600
+	background: grey // blue, red, green, black, white, yellow, pink, grey, 0x030303	
+}
+<body>{
+	<G>{
+		Y0{
+		<Text, Name1> 
+		<Text, Name2> 
+		}
+		Y1{
+		<Button, sub1> -
+		<TFeald, Points1>
+		<Button, add1> +
+		<Button, sub2> -
+		<TFeald, Points2>
+		<Button, add2> +
+		}
+		Y2{
+		<Button, Hide> Hide
+		<Button, Reset> Reset
+		<Button, Quit> Quit
+		}
+	}
+}

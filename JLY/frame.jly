@@ -1,0 +1,28 @@
+<theme>{
+	TField{ colour: light_grey; Font: Areal }
+	Button{ colour: light_grey; Font: Areal }
+	G{ space: 5 }
+}
+<head>{
+	title: Point System
+	resizeable: true
+	size: 50*10, 50*11
+	minsize: 30*10, 30*11
+	background: dark_grey
+}
+<body>{
+	<for, i=0; i<10; i+=1> {
+		<X>{
+			<for, j=0; j<10; j+=1> {
+				<TextField, %str(i,i)> %j, %i
+			}
+		}
+	}
+
+	<X>{
+		<Y, w:0.5>
+		<Button, solve> solve
+		<Button, solve> solve
+		<Y, w:0.5>
+	}
+}

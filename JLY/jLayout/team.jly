@@ -1,0 +1,5 @@
+<team>{
+	Panel: grey
+	TFeald{ colour: light_grey; Font: Areal }
+	Button{ colour: light_grey; Font: Areal }
+}

@@ -1,0 +1,41 @@
+<team>{
+	Panel: grey
+	TFeald{ colour: light_grey; Font: Areal }
+	Button{ colour: light_grey; Font: Areal }
+	G{ space: 5 }
+}
+<head>{
+	title: Point System
+	resizeable: true
+	size: 600, 250 // width: 600; height: 350
+	background: dark_grey // blue, red, green, black, white, yellow, pink, grey, 0x030303
+}
+<body>{
+	<X>{
+		<Button, Size; w:1> 		Size
+		<Button, Background; w:2> 	Background
+		<Button, Fonts> 	Fonts
+	}
+	<X>{
+		<Button, Hide> 		Hide
+		<Button, Logo> 		Logo
+		<Button, Black> 	Black
+		<Button, Clear> 	Clear
+	}
+	<X>{
+		<Y, w:0.5>
+		<Button, ResetP> Reset P
+		<Button, ResetN> Reset
+
+		<Y>{
+			<Label, tc: white> Given P
+			<TextField, h:2; GivenP> 1
+		}
+		<Y>{
+			<Label, tc: white> Team Amount
+			<TextField, h:2; TeamAmount> 2
+		}
+
+		<Y, w:0.5>
+	}
+}

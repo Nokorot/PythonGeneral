@@ -1,0 +1,41 @@
+In{
+	<int, width> 3
+	<int, height> 3
+}
+Theme{
+	TField{ bg: light_grey; font: Areal }
+	Button{ bg: grey; font: Areal }
+}
+Head{
+	title: Sudoku
+	resizeable: true
+	size: 50*9, 50*10
+	minsize: 30*9, 30*10
+	//background: grey
+}
+Body{
+	<X>{
+		<Y, w:0.5>
+		<Button, previus> <--
+		<TextField, name, w:3, align:c> Name
+		<Button, next> -->
+		<Y, w:0.5>
+	}
+
+	<for, j=0, j<height*height, j+=1> {
+		<X, space:0>{
+			<for, i=0, i<width*width, i+=1> {
+				<color, bg> light_grey if (i/width + j/height) % 2 == 0 else white
+				<TextField, "%j,%i", align: center, bg: bg>
+			}
+		}
+	}
+
+	<X>{
+		<Y, w:0.5>
+		<Button, solve> Solve
+		<Button, addlevel> AddLevel
+		<Button, make> Make
+		<Y, w:0.5>
+	}
+}

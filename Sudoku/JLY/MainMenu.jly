@@ -1,0 +1,48 @@
+In{
+
+}
+Theme{
+	<colour, bColour> #ccaacc
+	<str, font> Purisa
+
+	Label { bg: None;    font: %font, 10; tc: white}
+	TField{ bg: bColour; font: %font, 14 }
+	Button{ bg: bColour; font: %font, 14 }
+	G{ space: 5 }
+}
+Head{
+	title: Point System
+	resizeable: true
+	size: 600, 250
+	minsize: 400, 200
+	maxsize: 800, 400
+	background: #777777// dark_grey
+}
+Body{
+	<X>{
+		<Button, Size> 			Size
+		<Button, Background> 	Background
+		<Button, Fonts> 		Fonts
+	}
+	<X>{
+		<Button, Hide> 		Hide
+		<Button, Logo> 		Logo
+		<Button, Black>		Black
+		<Button, Clear> 	Clear
+	}
+	<X>{
+		<Y, w:0.5>
+		<Button, ResetP> Reset P
+		<Button, ResetN> Reset
+
+		<Y>{
+			<Label, tc: white> Given P
+			<TextField, GivenP; w:2; align:center> 1  // align center, left, right
+		}
+		<Y>{
+			<Label, tc: white> Team Amount
+			<TextField, TeamAmount; w:2; align:center> 2
+		}
+		<Y, w:0.5>
+	}
+}

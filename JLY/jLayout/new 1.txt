@@ -1,0 +1,59 @@
+public Grid(Rectangle rec, int xSize, int ySize, int space, boolean Static) {
+		if (Static) {
+			this.width = xSize;
+			this.height = ySize;
+
+			this.Grid = new Rectangle[xSize * ySize];
+
+			for (int i = 0; i < this.Grid.length; i++) {
+				this.Grid[i] = new Rectangle(rec.x + i % xSize * (rec.width + space), rec.y + i / xSize * (rec.width + space), rec.width, rec.width);
+			}
+		} else {
+			setBounds(rec);
+			this.X = new double[xSize];
+			this.Y = new double[ySize];
+			for (int i = 0; i < this.X.length; i++)
+				this.X[i] = 1.0D;
+			for (int i = 0; i < this.Y.length; i++) {
+				this.Y[i] = 1.0D;
+			}
+			this.width = this.X.length;
+			this.height = this.Y.length;
+			this.space = space;
+
+			this.totX = this.width;
+			this.totY = this.height;
+
+			this.expendX = new double[this.X.length];
+			this.expendY = new double[this.Y.length];
+
+			this.Grid = new Rectangle[this.width * this.height];
+
+			setRec();
+		}
+	}
+
+	public Grid(Rectangle rec, double[] x, double[] y, int space) {
+		setBounds(rec);
+		this.X = x;
+		this.Y = y;
+		this.width = x.length;
+		this.height = y.length;
+		this.space = space;
+
+		this.expendX = new double[x.length];
+		this.expendY = new double[y.length];
+
+		this.Grid = new Rectangle[this.width * this.height];
+
+		this.totX = 0.0D;
+		for (int i = 0; i < this.width; i++) {
+			this.totX += x[i];
+		}
+		this.totY = 0.0D;
+		for (int i = 0; i < this.height; i++) {
+			this.totY += y[i];
+		}
+
+		setRec();
+	}
