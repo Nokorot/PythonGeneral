@@ -4,6 +4,8 @@ import os, sys
 import pygame
 from pygame.locals import *
 
+import inspect
+os.chdir(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))))
 sys.path.insert(0, os.path.abspath('utils'))
 
 from tickSync import Sync

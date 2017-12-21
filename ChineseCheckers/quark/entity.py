@@ -29,6 +29,14 @@ class Entity():
     def Render(self, screen, pos):
         pass
 
+    def close(self):
+        self.OnClose()
+        for entity in self.entities:
+            entity.close()
+
+    def OnClose(self):
+        pass
+
     def update(self):
         for entity in self.entities:
             entity.update()
@@ -50,7 +58,10 @@ class Entity():
             return self.pos
         return self.pos + self.parent.getPos();
 
-
-class Aplication(Entity):
-    def __init__(self):
+class Application(Entity):
+    def __init__(self, parent):
         Entity.__init__(self, (0,0))
+        self.parent = parent
+
+    def getPos(self):
+        return self.pos

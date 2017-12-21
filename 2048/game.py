@@ -34,7 +34,7 @@ class Level(Entity):
 
     def move(self, dir):
         if self.time > 0: return
-        self.time = 10
+        self.time = 5
 
         w, h = self.levelSize;
 

@@ -1,10 +1,6 @@
 import pygame
 from pygame.locals import *
 
-import os, sys
-sys.path.insert(0, os.path.abspath('guis'))
-sys.path.insert(0, os.path.abspath('utils'))
-
 import options
 
 from random import randint
@@ -19,6 +15,8 @@ class Game():
         self.main = main
         self.w = main.width / sSize
         self.h = main.height / sSize
+
+        self.bgSprite = pygame.transform.scale(load_image('bg 4.jpg'), (main.width, main.height))
 
         self.restartMenu = RestatMenu(self, (main.width, main.height))
         self.pauseMenu = PauseMenu(self, (main.width, main.height))
@@ -52,6 +50,7 @@ class Game():
             return
 
     def render(self, screen):
+        screen.blit(self.bgSprite, (0,0))
         self.drawGame(screen)
         self.drawPauseinfo(screen)
         if self.paused:
@@ -94,7 +93,6 @@ class Game():
     def pause(self, b):
         self.paused = b
 
-
 import helpers
 from sprite import *
 class Snake():
@@ -111,10 +109,16 @@ class Snake():
         self.count = 200
         self.x, self.y = 0, 0
 
+        from random import randint
+        options.setColor((randint(0,255),randint(0,255),randint(0,255)))
         self.head = options.snake[0]
         self.tail = options.snake[1]
         self.strait = options.snake[2]
         self.turnS = options.snake[3]
+
+        def scale(img):
+            return pygame.transform.scale(img, (sSize, sSize))
+        [self.head, self.tail, self.strait, self.turnS] = map(scale, [self.head, self.tail, self.strait, self.turnS])
 
     def getPos(self, i=0):
         return self.parts[-1-i][0]
@@ -210,8 +214,13 @@ class PauseMenu(Gui):
         restartB.bColor = None
         Gui.addComponent(self, restartB)
 
-        mainB = Button(grid.getRect(1, 3), 'Main Menu')
+        '''mainB = Button(grid.getRect(1, 3), 'Main Menu')
         mainB.action = lambda button: (game.reset(), game.main.setState(0))
+        mainB.bColor = None
+        Gui.addComponent(self, mainB)'''
+
+        mainB = Button(grid.getRect(1, 3), 'Quite')
+        mainB.action = lambda button: (game.main.exit())
         mainB.bColor = None
         Gui.addComponent(self, mainB)
 
@@ -229,7 +238,12 @@ class RestatMenu(Gui):
         restartB.bColor = None
         Gui.addComponent(self, restartB)
 
-        mainB = Button(grid.getRect(1, 2), 'Main Menu')
+        '''mainB = Button(grid.getRect(1, 2), 'Main Menu')
         mainB.action = lambda button: (game.reset(), game.main.setState(0))
+        mainB.bColor = None
+        Gui.addComponent(self, mainB)'''
+
+        mainB = Button(grid.getRect(1, 2), 'Quite')
+        mainB.action = lambda button: (game.main.exit())
         mainB.bColor = None
         Gui.addComponent(self, mainB)

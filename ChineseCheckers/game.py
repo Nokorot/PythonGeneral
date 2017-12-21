@@ -1,32 +1,59 @@
 
-from entity import *
+import pygame
+from pygame import *
+
+from entity import Application, Entity
 from vec import *
 from Colors import *
 from sprite import SpriteFromFile, ShitFromFile
-from math import sqrt
+from gui import Rectangle
+from button import Button
 
+from serverClient import GameClient
+
+from math import sqrt
 import random
+
+import time
 
 from main import *
 
-class Game(Aplication):
+def MakeNewGame(mainMenu, gameId):
+    game = Game(mainMenu, gameId)
+    game.serverClient.make(game.level.levelSize)
+    game.chooseColor(int(game.serverClient.playerId)+1)
+    return game
 
-    def __init__(self):
-        Aplication.__init__(self)
+def ConnectToGame(mainMenu, gameId):
+    game = Game(mainMenu, gameId)
+    print game.myColor
+    game.serverClient.connect()
+    game.chooseColor(int(game.serverClient.playerId)+1)
+    return game
+
+class Game(Application):
+    def __init__(self, mainMenu, gameId):
+        Application.__init__(self, mainMenu)
         self.bg = SpriteFromFile('bg 0.jpg')
         self.bg.transform(size=self.bg.scale('fill', ScreenSize/4))
 
         self.level = Level(self)
         self.add(self.level)
 
-        self.Me = 0;
-        self.whoesTurn = 1;
+        self.myColor = -1
+        self.whoesTurn = -1;
 
-        [self.level.addColor(i+1) for i in range(6)]
+        ###
+        self.applyB = Button(Rectangle((ScreenWidth - 150, 50, 100, 50)), 'Apply')
+        self.applyB.action = lambda x: self.applyMove()
+        self.add(self.applyB)
+        ###
 
         self.selectedStone = None
         self.pathStone = None
         self.path = []
+
+        self.serverClient = GameClient(mainMenu.serverClient, self, gameId)
 
     def Update(self):
         pass
@@ -43,7 +70,6 @@ class Game(Aplication):
             if self.selectedStone != None:
                 for stone in self.level.stones'''
         if (event.type == pygame.MOUSEBUTTONUP):
-            print 'hey'
             if self.selectedStone != None:
                 tile = self.level.getClosestTile(Vec(pygame.mouse.get_pos()))
                 if tile != None:
@@ -60,6 +86,10 @@ class Game(Aplication):
             if [K_RETURN, K_SPACE].__contains__(event.key):
                 self.applyMove()
 
+    def chooseColor(self, color):
+        self.myColor = color
+        self.serverClient.setColor(self.myColor)
+
     def selectStone(self, stone):
         # TODO: Is it my turn ...
         if stone != self.pathStone:
@@ -74,9 +104,11 @@ class Game(Aplication):
         stone.selected = True
 
     def applyMove(self):
-        print self.pathStone
         if self.pathStone == None or len(self.path) <= 1:
             return
+        self.pathStone.tile = self.path[0]
+        self.path[0].stone = self.pathStone
+        print self.serverClient.move(self.path)
         self.pathStone = None
         self.path = []
         self.whoesTurn = (self.whoesTurn + 1) % 6
@@ -86,7 +118,7 @@ class Level(Entity):
     def __init__(self, game):
         Entity.__init__(self,  ScreenSize / 2)#* Vec(0.4, 0.5))
         self.game = game
-        self.size = Vec(880, 880)
+        self.size = Vec(0.75, 0.75) * ScreenWidth
 
         self.tiles = {}
         self.stones = []
@@ -101,11 +133,18 @@ class Level(Entity):
             self.stones.append(stone)
             stone.setTile(tile);
 
+    def removeColor(self, color):
+        for tile in self.tiles.itervalues():
+            if tile.stone.color == color:
+                self.stones.remove(tile.stone)
+                tile.stone.removeMe()
+                tile.stone = None
+
     def cords2Pos(self, x, y):
         from math import pi, cos, sin
         xa = x + 0.5 * y
         ya = y * sqrt(3)/2
-        n = self.game.whoesTurn
+        n = 1-self.game.myColor
         s, c = sin(pi * n / 3), cos(pi * n / 3)
         xa, ya = c * xa - s * ya, s * xa + c * ya
 
@@ -157,6 +196,7 @@ class Level(Entity):
             self.grid.append((x, min(T), x, max(T)))
 
     def legalMove(self, a, b, firstMove):
+        print a, b
         if a == b or self.getTileByCord(b).stone != None:
             return False
         diag = 1 if a[0] == b[0] else 2 if a[1] == b[1] else 3 if a[0]+a[1] == b[0]+b[1] else 0

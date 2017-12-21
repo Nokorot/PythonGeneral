@@ -6,14 +6,12 @@ Note there are comments here, but for the full explanation,
 follow along in the tutorial.
 """
 
-
 #Import Modules
 from pygame.locals import *
 import os, pygame, sys
 
 if not pygame.font: print 'Warning, fonts disabled'
 if not pygame.mixer: print 'Warning, sound disabled'
-
 
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
@@ -24,7 +22,7 @@ def resource_path(relative_path):
         print name
         base_path = os.path.abspath(".")
 
-    return os.path.join(base_path,'data/' +relative_path)
+    return os.path.join(base_path,'res/' + relative_path)
 
 #functions to create our resources
 def load_image(name, colorkey=None):
@@ -34,7 +32,7 @@ def load_image(name, colorkey=None):
     except pygame.error, message:
         print 'Cannot load image:', fullname
         raise SystemExit, message
-    image = image.convert()
+    image = image.convert_alpha()
     if colorkey is not None:
         if colorkey is -1:
             colorkey = image.get_at((0,0))

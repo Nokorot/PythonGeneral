@@ -47,7 +47,6 @@ class Screen():
     def blit(self, image, dest, area=None, special_flags=0):
         self.screen.blit(image, tuple(dest), area)
 
-
 def makeRect(pos, size, center=False):
     if (center):
         return (pos[0] - size[0]/2, pos[1] - size[1]/2, size[0], size[1])
