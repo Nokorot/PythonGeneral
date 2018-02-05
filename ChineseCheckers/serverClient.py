@@ -68,6 +68,10 @@ class GameClient():
                     B = self.game.level.getTileByCord((b[0], b[1]))
                     A.stone.tile = B
                     A.stone, B.stone = None, A.stone
+                elif (change[1] == 'nextColor'):
+                    self.game.nextColor(int(change[2]))
+                elif (change[1] == 'startGame'):
+                    self.game.startGame()
             self.last_change_time = float(change[0])
 
     def make(self, levelSize):

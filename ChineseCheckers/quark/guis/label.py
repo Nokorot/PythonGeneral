@@ -8,15 +8,17 @@ from Colors import *
 from component import Component
 
 def rectField(screen, label):
+    x,y = label.getPos()
+    w,h = label.getSize()
     rect = label.rect
     if label.bColor:
         pygame.draw.rect(screen, label.bColor, rect.pgRect())
     if pygame.font:
-        font = pygame.font.Font(None, int(rect.height))
+        font = pygame.font.Font(None, int(h))
         t = label.name
 
         text = font.render(t, 1, label.fColor)
-        textpos = text.get_rect(centerx=rect.x + int(rect.width/2), centery= rect.y + int(rect.height/2))
+        textpos = text.get_rect(centerx=x + int(w/2), centery= y + int(h/2))
         screen.blit(text, textpos)
     if label.selected:
         lines = rect.corners()
@@ -35,6 +37,9 @@ class Label(Component):
         self.time = 0
         self.mark = True
         self.shift = False
+
+    def getSize(self):
+        return self.rect.width, self.rect.height
 
     def update(self):
         self.time = (self.time + 1) % 90

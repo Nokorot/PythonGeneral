@@ -6,8 +6,9 @@ from entity import Application, Entity
 from vec import *
 from Colors import *
 from sprite import SpriteFromFile, ShitFromFile
-from gui import Rectangle
+from gui import Rectangle, Gui
 from button import Button
+from label import Label
 
 from serverClient import GameClient
 
@@ -20,8 +21,8 @@ from main import *
 
 def MakeNewGame(mainMenu, gameId):
     game = Game(mainMenu, gameId)
+    game.gmenu.makeHost()
     game.serverClient.make(game.level.levelSize)
-    game.chooseColor(int(game.serverClient.playerId)+1)
     return game
 
 def ConnectToGame(mainMenu, gameId):
@@ -33,9 +34,14 @@ def ConnectToGame(mainMenu, gameId):
 
 class Game(Application):
     def __init__(self, mainMenu, gameId):
-        Application.__init__(self, mainMenu)
+        Application.__init__(self, mainMenu, (0, 0))
+        self.gameStarted = False
+
         self.bg = SpriteFromFile('bg 0.jpg')
         self.bg.transform(size=self.bg.scale('fill', ScreenSize/4))
+
+        self.width = ScreenWidth
+        self.height = ScreenHeight
 
         self.level = Level(self)
         self.add(self.level)
@@ -43,11 +49,8 @@ class Game(Application):
         self.myColor = -1
         self.whoesTurn = -1;
 
-        ###
-        self.applyB = Button(Rectangle((ScreenWidth - 150, 50, 100, 50)), 'Apply')
-        self.applyB.action = lambda x: self.applyMove()
-        self.add(self.applyB)
-        ###
+        self.gmenu = GameMenu(self, (0, 0, ScreenWidth, ScreenHeight))
+        self.add(self.gmenu)
 
         self.selectedStone = None
         self.pathStone = None
@@ -55,8 +58,17 @@ class Game(Application):
 
         self.serverClient = GameClient(mainMenu.serverClient, self, gameId)
 
-    def Update(self):
-        pass
+    def update(self):
+        if self.gameStarted:
+            Entity.update(self)
+        else:
+            self.gmenu.update()
+
+    def eventAction(self, event):
+        if self.gameStarted:
+            Entity.eventAction(self, event)
+        else:
+            self.gmenu.eventAction(event)
 
     def Render(self, screen, pos):
         for i in range(4):
@@ -87,8 +99,14 @@ class Game(Application):
                 self.applyMove()
 
     def chooseColor(self, color):
-        self.myColor = color
-        self.serverClient.setColor(self.myColor)
+        responce = self.serverClient.setColor(color)
+        if responce.startswith('[0]'):
+            self.myColor = color
+            self.gmenu.nextColor(color)
+
+    def nextColor(self, color):
+        self.whoesTurn = color
+        self.gmenu.nextColor(color)
 
     def selectStone(self, stone):
         # TODO: Is it my turn ...
@@ -103,6 +121,11 @@ class Game(Application):
         self.selectedStone = stone
         stone.selected = True
 
+    def startGame(self):
+        if not self.gameStarted:
+            self.gameStarted = True
+            self.gmenu.startGame()
+
     def applyMove(self):
         if self.pathStone == None or len(self.path) <= 1:
             return
@@ -111,14 +134,69 @@ class Game(Application):
         print self.serverClient.move(self.path)
         self.pathStone = None
         self.path = []
-        self.whoesTurn = (self.whoesTurn + 1) % 6
+        self.whoesTurn = -1
+
+class GameMenu(Gui):
+    def __init__(self, game, bounds):
+        Gui.__init__(self, game, bounds)
+        self.game = game
+
+        self.l = Label(Rectangle((25, 25, 100, 25)), 'Your Color:')
+        self.addComponent(self.l)
+
+        self.stone = Stone(None, 25, None)
+        self.stone.getPos = lambda: self.getPos() + Vec(165, 35)
+
+        self.applyB = Button(Rectangle((25, 75, 150, 50)), 'Apply Move')
+        self.applyB.action = lambda x: game.applyMove()
+
+        self.colorBs = []
+        for color in range(1,7):
+            self.colorBs.append(Stone(color, 25, self))
+
+        self.startB = None
+
+    def selectStone(self, stone):
+        if self.game.myColor != stone.color:
+            self.game.chooseColor(stone.color)
+
+    def makeHost(self):
+        self.startB = Button(Rectangle((25, 75, 150, 50)), 'Start Game')
+        self.startB.action = lambda x: self.game.serverClient.gRequest("startGame")
+        self.addComponent(self.startB)
+
+    def startGame(self):
+        if self.startB != None:
+            self.comps.remove(self.startB)
+            del self.startB
+        del self.colorBs
+        self.addComponent(self.applyB)
+        self.l.name = "Current Player:"
+
+    def nextColor(self, color):
+        self.stone.color = color
+
+    def EventAction(self, event):
+        if not self.game.gameStarted:
+            for cb in self.colorBs:
+                cb.eventAction(event)
+
+    def Render(self, screen, pos):
+        self.stone.Render(screen, None)
+        if not self.game.gameStarted:
+            for cb in self.colorBs:
+                s = Vec2(0,0)
+                for tile in self.game.level.tiles[cb.color]:
+                    s += Vec(tile.getPos());
+                cb.pos = s / len(self.game.level.tiles[cb.color])
+                cb.Render(screen, None)
 
 class Level(Entity):
 
     def __init__(self, game):
         Entity.__init__(self,  ScreenSize / 2)#* Vec(0.4, 0.5))
         self.game = game
-        self.size = Vec(0.75, 0.75) * ScreenWidth
+        self.size = Vec(0.9, 0.9) * game.width
 
         self.tiles = {}
         self.stones = []
@@ -127,18 +205,19 @@ class Level(Entity):
         self.time = 0;
 
     def addColor(self, color):
+
         for tile in self.tiles[color]:
-            stone = Stone(color, self)
+            stone = Stone(color, self.tileSpace * 0.4, self.game)
             self.add(stone)
             self.stones.append(stone)
             stone.setTile(tile);
 
     def removeColor(self, color):
-        for tile in self.tiles.itervalues():
-            if tile.stone.color == color:
-                self.stones.remove(tile.stone)
-                tile.stone.removeMe()
-                tile.stone = None
+        for stone in self.stones[:]:
+            if stone.color == color:
+                self.stones.remove(stone)
+                stone.removeMe()
+                stone.tile.stone = None
 
     def cords2Pos(self, x, y):
         from math import pi, cos, sin
@@ -217,9 +296,6 @@ class Level(Entity):
                 return True
         return False;
 
-    def Update(self):
-        pass
-
     def Render(self, screen, pos):
         def calcPos(x, y):
             xa, ya = self.cords2Pos(x,y)
@@ -266,20 +342,18 @@ class Tile(Entity):
         '''
         return Vec(xa, ya) + self.parent.getPos()
 
-    def Update(self):
-        pass
-
     def Render(self, screen, pos):
         screen.circle(Colors[self.color], self.getPos(), self.space * 0.1)
 
 class Stone(Entity):
 
-    def __init__(self, color, level):
+    def __init__(self, color, size, game):
         Entity.__init__( self, Vec(0,0))
         self.sprite = SpriteFromFile('grad.png')
-        self.sprite.transform(True, size= Vec2(level.tileSpace * 0.8))
+        self.sprite.transform(True, size= Vec2(size*2))
+        self.size = size
 
-        self.game = level.game
+        self.game = game
         self.color = color
         self.tile = None
         self.selected = False
@@ -294,13 +368,14 @@ class Stone(Entity):
         if self.selected:
             return self.pos
         if self.tile == None:
-            return Vec(0,0)
+            return self.pos
         return self.tile.getPos()
 
     def Render(self, screen, pos):
-        if self.tile != None:
+        #if self.tile != None:
             #self.sprite.draw(screen, self.getPos())
-            screen.circle(Colors[self.color], self.getPos(), self.tile.space * 0.3)
+        if self.color != None:
+            screen.circle(Colors[self.color], self.getPos(), self.size)
 
     def Update(self):
         if self.selected:
@@ -309,7 +384,7 @@ class Stone(Entity):
     def eventAction(self, event):
         if (event.type == pygame.MOUSEBUTTONDOWN):
             d = (Vec(event.pos) - self.getPos())
-            if d.norm() <= self.tile.space * 0.3:
+            if d.norm() <= self.size:
                 self.game.selectStone(self)
                 '''self.selected = True
                 self.parent.selectedStone = self'''

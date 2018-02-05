@@ -16,8 +16,8 @@ from glider import Glider
 class Gui(Application):
 
     def __init__(self, gui, bounds):
-        Application.__init__(self, gui)
         self.x, self.y, self.width, self.height = fromBounds(bounds)
+        Application.__init__(self, gui, (self.x, self.y))
 
         self.xcenter = self.x + self.width/2
         self.ycenter = self.y + self.height/2
@@ -41,10 +41,12 @@ class Gui(Application):
             index += 1
 
     def render(self, screen):
+        self.Render(screen, self.getPos())
         for c in self.comps:
             c.render(screen)
 
     def eventAction(self, event):
+        self.EventAction(event)
         for c in self.comps:
             if c.eventAction(event):
                 break

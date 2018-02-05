@@ -9,7 +9,7 @@ from gameMain import GameMain
 
 from vec import *
 ScreenWidth = 800;
-ScreenHeight = 600;
+ScreenHeight = 700;
 ScreenSize = Vec(ScreenWidth, ScreenHeight)
 
 import menu_main as mm

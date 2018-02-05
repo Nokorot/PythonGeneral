@@ -59,8 +59,8 @@ class Entity():
         return self.pos + self.parent.getPos();
 
 class Application(Entity):
-    def __init__(self, parent):
-        Entity.__init__(self, (0,0))
+    def __init__(self, parent, pos=(0,0)):
+        Entity.__init__(self, pos)
         self.parent = parent
 
     def getPos(self):
