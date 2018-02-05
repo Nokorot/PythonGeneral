@@ -2,7 +2,8 @@
 import urllib2
 
 class ServerClient():
-    url = 'http://127.0.0.1:5000/chinice_checers/'
+    #url = 'http://127.0.0.1:5000/chinice_checers/'
+    url = 'https://minigameshost.herokuapp.com/chinice_checers/'
 
     def __init__(self):
         self.children = []
@@ -35,12 +36,11 @@ class ServerClient():
             return None
 
 class GameClient():
-    def __init__(self, serverClient, game, gameId):
+    def __init__(self, serverClient, game):
         self.serverClient = serverClient
         self.serverClient.add(self)
 
         self.game = game
-        self.gameId = gameId
         self.last_change_time = 0
 
         self.playerId = None
@@ -51,7 +51,6 @@ class GameClient():
             return
         if not str(respnce).startswith('[0]'):
             for change in respnce.split('\n'):
-                print change
                 change = change.split('|')
                 if (change[1] == 'make'):
                     pass
@@ -75,14 +74,20 @@ class GameClient():
             self.last_change_time = float(change[0])
 
     def make(self, levelSize):
-        respnce = self.gRequest('make', levelSize)
+        respnce = self.serverClient.request('initGame', 'make', levelSize)
         if respnce != None:
-            self.playerId = respnce
+            data = respnce.split('|')
+            self.gameId = data[0]
+            print "Game ID: %s" % self.gameId
+            self.playerId = data[1]
 
-    def connect(self):
+    def connect(self, gameId):
+        self.gameId = gameId
         respnce = self.gRequest('connect')
         if respnce != None:
-            self.playerId = respnce
+            data = respnce.split('|')
+            self.playerId = data[0]
+            self.game.level.constructLevel(int(data[1]))
 
     def setColor(self, color):
         if self.playerId != None:

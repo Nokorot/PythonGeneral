@@ -15,8 +15,13 @@ def rectField(screen, textField):
     if textField.bColor:
         pygame.draw.rect(screen, textField.bColor, rect.pgRect())
     if pygame.font:
-        font = pygame.font.Font(None, int(rect.height/2))
-        t = ' ' + textField.name
+        font = pygame.font.Font(None, int(rect.height/4 * textField.nameSize))
+        text = font.render(textField.name, 1, textField.aColor)
+        textpos = text.get_rect(x=rect.x + 5, y= rect.y + 5)
+        screen.blit(text, textpos)
+
+        font = pygame.font.Font(None, int(rect.height/2 * textField.textSize))
+        t = ' ' + textField.text
         if textField.mark:
             t += '|'
         else:
@@ -29,8 +34,15 @@ def rectField(screen, textField):
         pygame.draw.lines(screen, red, True, lines)
 
 class TextField(Component):
-    def __init__(self, rect, name=''):
+    def __init__(self, rect, name='', text=''):
         Component.__init__(self, rect, name)
+        self.text = text
+
+        self.nameSize = 1
+        self.textSize = 1
+
+        self.legalSyms = None
+        self.maxLength = 2**16
 
         self.action = printAction
         self.draw = rectField
@@ -57,6 +69,13 @@ class TextField(Component):
     def render(self, screen):
         self.draw(screen.screen, self)
 
+    def addChar(self, char):
+        if self.legalSyms != None and not self.legalSyms.__contains__(char):
+            return
+        if self.maxLength >= 0 and len(self.text) >= self.maxLength:
+            return
+        self.text += char
+
     def EventAction(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.contains(event.pos):
@@ -64,21 +83,9 @@ class TextField(Component):
                 return True
         if self.selected:
             if event.type == pygame.KEYDOWN:
-                key = pygame.key.name(event.key)
-                if 'abcdefghijklmnopqrstuvwxyz1234567890,.-'.__contains__(key):
-                    if self.shift:
-                        self.name += key.upper()
-                    else:
-                        self.name += key
-                    return True
-                if event.key == K_SPACE:
-                    self.name += ' '
                 if event.key == K_BACKSPACE:
-                    self.name = self.name[:-1]
-                    return True
-                if [K_LSHIFT, K_RSHIFT].__contains__(event.key):
-                    self.shift = True
-            if event.type == pygame.KEYUP:
-                if [K_LSHIFT, K_RSHIFT].__contains__(event.key):
-                    self.shift = False
+                    self.text = self.text[:-1]
+                else:
+                    self.addChar(event.unicode)
+
         return False

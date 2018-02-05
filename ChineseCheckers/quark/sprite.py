@@ -24,7 +24,7 @@ class Sprite():
                 image =pygame.transform.rotate(image, value.floor())
         if keep:
             self.image = image
-        return image
+        return Sprite(image)
 
     def scale(self, scaleType, rect):
         if scaleType == 'fill':
@@ -32,10 +32,9 @@ class Sprite():
                 return Vec(rect[1] * self.size[0] / self.size[1] , rect[1])
             return Vec(rect[0], rect[0] * self.size[0] / self.size[1])
     def draw(self, screen, pos, center=True, **kws):
-
         if not isinstance(pos, Vec): pos = Vec(pos)
         if center: pos = pos - self.size / 2
-        screen.blit( self.transform(False, **kws) , pos)
+        screen.blit( self.image , pos)
 
 def subsprite(image, x=0, y=0, width=1, height=1):
     w,h = image.get_size()
@@ -49,4 +48,4 @@ def SpriteFromFile(filename):
     return Sprite(load_image(filename))
 
 def ShitFromFile(filename, X, Y):
-    return SpriteShit(load_image(filename, (255, 0, 255)), X, Y)
+    return SpriteShit(load_image(filename), X, Y)

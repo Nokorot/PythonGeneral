@@ -45,7 +45,8 @@ class Screen():
         pygame.draw.aalines(self.screen, color, closed, pointlist, blend)
 
     def blit(self, image, dest, area=None, special_flags=0):
-        self.screen.blit(image, tuple(dest), area)
+        if not image.get_locked():
+            self.screen.blit(image, tuple(dest), area)
 
 def makeRect(pos, size, center=False):
     if (center):

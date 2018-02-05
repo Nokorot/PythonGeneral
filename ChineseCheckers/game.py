@@ -9,6 +9,7 @@ from sprite import SpriteFromFile, ShitFromFile
 from gui import Rectangle, Gui
 from button import Button
 from label import Label
+from textField import TextField
 
 from serverClient import GameClient
 
@@ -19,26 +20,27 @@ import time
 
 from main import *
 
-def MakeNewGame(mainMenu, gameId):
-    game = Game(mainMenu, gameId)
-    game.gmenu.makeHost()
+def MakeNewGame(mainMenu, levelSize=3):
+    game = Game(mainMenu)
+    game.level.constructLevel(levelSize)
     game.serverClient.make(game.level.levelSize)
+    game.gmenu.makeHost()
     return game
 
 def ConnectToGame(mainMenu, gameId):
-    game = Game(mainMenu, gameId)
-    print game.myColor
-    game.serverClient.connect()
-    game.chooseColor(int(game.serverClient.playerId)+1)
+    game = Game(mainMenu)
+    game.serverClient.connect(gameId)
     return game
 
 class Game(Application):
-    def __init__(self, mainMenu, gameId):
+    def __init__(self, mainMenu):
         Application.__init__(self, mainMenu, (0, 0))
         self.gameStarted = False
 
         self.bg = SpriteFromFile('bg 0.jpg')
         self.bg.transform(size=self.bg.scale('fill', ScreenSize/4))
+
+        self.stoneSpriteScheet = ShitFromFile('stones 1.png', 3, 2)
 
         self.width = ScreenWidth
         self.height = ScreenHeight
@@ -56,7 +58,7 @@ class Game(Application):
         self.pathStone = None
         self.path = []
 
-        self.serverClient = GameClient(mainMenu.serverClient, self, gameId)
+        self.serverClient = GameClient(mainMenu.serverClient, self)
 
     def update(self):
         if self.gameStarted:
@@ -165,16 +167,22 @@ class GameMenu(Gui):
         self.startB.action = lambda x: self.game.serverClient.gRequest("startGame")
         self.addComponent(self.startB)
 
+        self.gameID = TextField(Rectangle((ScreenWidth - 205, 50, 180, 75)), 'Game ID', self.game.serverClient.gameId)
+        self.gameID.nameSize = 1.5
+        self.gameID.textSize = 1.3
+        self.addComponent(self.gameID)
+
     def startGame(self):
         if self.startB != None:
             self.comps.remove(self.startB)
+            self.comps.remove(self.gameID)
             del self.startB
         del self.colorBs
         self.addComponent(self.applyB)
         self.l.name = "Current Player:"
 
     def nextColor(self, color):
-        self.stone.color = color
+        self.stone.setColor(color)
 
     def EventAction(self, event):
         if not self.game.gameStarted:
@@ -200,7 +208,6 @@ class Level(Entity):
 
         self.tiles = {}
         self.stones = []
-        self.constructLevel(3)
 
         self.time = 0;
 
@@ -321,7 +328,7 @@ class Level(Entity):
                     return tile
         return None
 
-Colors = [black, red, blue, green, purple, cyan, pink]
+Colors = [cyan, green, purple, blue, black, red, white]
 class Tile(Entity):
 
     def __init__(self, level, cord, color):
@@ -345,18 +352,32 @@ class Tile(Entity):
     def Render(self, screen, pos):
         screen.circle(Colors[self.color], self.getPos(), self.space * 0.1)
 
+stoneSpriteScheet = None
+
 class Stone(Entity):
 
     def __init__(self, color, size, game):
         Entity.__init__( self, Vec(0,0))
-        self.sprite = SpriteFromFile('grad.png')
-        self.sprite.transform(True, size= Vec2(size*2))
         self.size = size
 
         self.game = game
-        self.color = color
+        self.color = None
+        self.sprite = None
+        if color != None:
+            self.setColor(color)
         self.tile = None
         self.selected = False
+
+
+    def setColor(self, color):
+        global stoneSpriteScheet;
+        if stoneSpriteScheet == None:
+            print 'Hey'
+            stoneSpriteScheet = ShitFromFile('stones 1.png', 3, 2)
+        if self.color == color:
+            return;
+        self.sprite = stoneSpriteScheet[color-1].transform(True, size= Vec2(self.size*2))
+        self.color = color
 
     def setTile(self, tile):
         if self.tile != None:
@@ -374,8 +395,9 @@ class Stone(Entity):
     def Render(self, screen, pos):
         #if self.tile != None:
             #self.sprite.draw(screen, self.getPos())
-        if self.color != None:
-            screen.circle(Colors[self.color], self.getPos(), self.size)
+        if self.color != None and self.sprite != None:
+            self.sprite.draw(screen, self.getPos(), True)
+            #screen.circle(Colors[self.color], self.getPos(), self.size)
 
     def Update(self):
         if self.selected:

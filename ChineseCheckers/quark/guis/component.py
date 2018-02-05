@@ -5,6 +5,7 @@ from Colors import *
 from entity import Entity
 
 class Component(Entity):
+    aColor = (20, 20, 20)
     bColor = gray
     fColor = white
     sColor = white

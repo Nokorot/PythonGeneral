@@ -126,20 +126,11 @@ class NewGameMenu(Gui):
         grid = self.getGrid([1,2,1],[2,1,1,1,2],10)
         #grid.getPos(1,1)
 
-        '''gameL = Label(grid.getRect(1, 1), 'Game')
-        self.addComponent(gameL)
-        '''
-
-        self.gameTF = TextField(grid.getRect(1, 1), 'game')
+        self.gameTF = TextField(grid.getRect(1, 1), 'Level Size', '3')
+        self.gameTF.legalSyms = "23456"
+        self.gameTF.maxLength = 1
         self.gameTF.action = lambda tf: self.play()
         self.addComponent(self.gameTF)
-
-        '''sizeL = Label(grid.getRect(1, 3), 'Size')
-        self.addComponent(sizeL)
-
-        self.sizeTF = TextField(grid.getRect(1, 4), '7,5')
-        self.sizeTF.action = lambda tf: self.play()
-        self.addComponent(self.sizeTF)'''
 
         playB = Button(grid.getRect(1,2), 'Play')
         playB.action = lambda button: self.play()
@@ -149,15 +140,14 @@ class NewGameMenu(Gui):
         cancelB.action = lambda button: (mainMenu.mainMenu())
         self.addComponent(cancelB)
 
+        self.selected = 0
+
     def play(self):
-        if (len(self.gameTF.name) < 3): return
-        #if (len(self.sizeTF.name) < 3): return
+        if len(self.gameTF.text) < 1:
+            return
+        levelSize = int(self.gameTF.text)
 
-        game = self.gameTF.name
-        #size = self.sizeTF.name
-
-        self.mainMenu.menu = None
-        self.mainMenu.menu = MakeNewGame(self.mainMenu, game)
+        self.mainMenu.menu = MakeNewGame(self.mainMenu, levelSize)
 
 class ConnectMenu(Gui):
     def __init__(self, mainMenu):
@@ -172,7 +162,9 @@ class ConnectMenu(Gui):
         gameL = Label(grid.getRect(1, 1), 'Game')
         self.addComponent(gameL)
 
-        self.gameTF = TextField(grid.getRect(1, 2), 'game')
+        self.gameTF = TextField(grid.getRect(1, 1), 'Game ID')
+        self.gameTF.legalSyms = "1234567890"
+        self.gameTF.maxLength = 4
         self.gameTF.action = lambda tf: self.play()
         self.addComponent(self.gameTF)
 
@@ -185,12 +177,5 @@ class ConnectMenu(Gui):
         self.addComponent(cancelB)
 
     def play(self):
-        print 'Hey'
-
-        if (len(self.gameTF.name) < 3): return
-
-        print 'Hey'
-
-        game = self.gameTF.name
-
-        self.mainMenu.menu = ConnectToGame(self.mainMenu, game)
+        if (len(self.gameTF.text) <= 3): return
+        self.mainMenu.menu = ConnectToGame(self.mainMenu, self.gameTF.text)
