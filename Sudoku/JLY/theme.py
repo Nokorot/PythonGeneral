@@ -52,7 +52,7 @@ class Color(JLYObject):
     def parse(self, inp):
         value = self.eval(inp)
 
-        print value, inp
+        #print value, inp
 
         for var in self.vars:
             if var == value:

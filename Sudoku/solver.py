@@ -1,93 +1,179 @@
 
+import copy
+
 silent = True
 
-class Solver:
+class Grid:
+    def __init__(self, dim=(3,3)):
+        self.w, self.h = dim
+        self.vrange = dim[0] * dim[1]
+        self.cells = [Cell(self, x, y, self.vrange) for y in range(self.vrange) for x in range(self.vrange)]
+        self.filled = 0
+        self.IS_DONE = False
+        self.IS_FALSE = False
+
     def get(self, x, y):
-        return self.Fields[x + y*9]
+        return self.cells[x + y*self.vrange]
 
-    def __init__(self, dim=(9,9), onSet=None):
-        self.Fields = [Field(self, x, y) for y in range(dim[1]) for x in range(dim[0])]
-        self.filld = 0
-        self.DONE = False
+    def set(self, x, y, value):
+        self.cells[x + y*self.vrange].set(value);
 
-        self.onSet = onSet if onSet else lambda f: None
+    def reduce(self, x, y, value):
+        self.cells[x + y*self.vrange].reduce(value)
+
+    def blocks(self):
+        for i in range(self.w * self.h):
+            yield self.getBlock(i%self.h, i/self.h)
+
+    def lines(self):
+        vr = self.vrange
+        for i in range(vr):
+            yield self.cells[i*vr: (i+1)*vr]
+            yield self.cells[i::vr]
+
+    def getBlock(self, i, j):
+        return [self.get(i*self.w + k%self.w, j*self.h + k/self.w) for k in range(self.vrange)]
+
+    def __str__(self):
+        vr = self.vrange
+        return '\n'.join([' '.join(map(str, self.cells[i*vr : (i+1)*vr])) for i in range(vr)])
+
+class Cell:
+    def __init__(self, grid, x, y, vrange):
+        self.grid, self.x, self.y, self.vrange = grid, x, y, vrange
+        self.values = [i+1 for i in range(vrange)]
+        self.IS_FALSE = False
+
+    def makeFalse(self):
+        self.IS_FALSE = True
+        self.grid.IS_FALSE = True
+
+    def set(self, value):
+        self.values = value
+        if type(value) == int:
+            self.grid.filled += 1
+        if self.grid.filled == len(self.grid.cells):
+            self.grid.IS_DONE = True
+
+        w,h,vr = self.grid.w, self.grid.h, self.vrange
+        for i in range(vr):
+            xa,ya = self.x/w*w + i%w, self.y/h*h + i/w
+            if xa != self.x and ya != self.y:
+                self.grid.reduce(xa, ya, value)
+                if self.IS_FALSE:
+                    return
+        for i in range(vr):
+            if i != self.x: self.grid.reduce(i, self.y, value)
+            if i != self.y: self.grid.reduce(self.x, i, value)
+            if self.IS_FALSE:
+                return
+
+    def reduce(self, value):
+        if type(self.values) == int:
+            if self.values == value:
+                self.makeFalse()
+            return
+        if type(self.values) == list and not self.values.__contains__(value):
+            return
+        self.values.remove(value)
+        if len(self.values) == 0:
+            self.makeFalse()
+        elif len(self.values) == 1:
+            self.set(self.values[0])
+
+    def __str__(self):
+        if self.IS_FALSE:
+            return '*%s*' % str(self.values)
+        return str(self.values)
+
+class Solver:
+    def __init__(self, values, dim=(3,3)):
+        self.values = values
+        self.grid = Grid(dim)
+        self.w, self.h = dim
+        self.vrange = dim[0] * dim[1]
+        self.forceFrames = []
+        self.solutions = []
+
+        for c, v in zip(self.grid.cells, values):
+            try: v = int(v)
+            except ValueError: continue
+            c.set(v)
+
+    def solve(self, methodLimit=None):
+        self.useMethods(3)#methodLimit)
+
+        if len(self.solutions) > 0:
+            for i in range(len(self.solutions[0].cells)):
+                self.values[i] = str(self.solutions[0].cells[i])
+            return self.solutions[0].IS_DONE
 
     def SecondLevel(self):
         results = False
-        for i in range(9):
-            bolke = [self.get((i%3)*3 + j%3, (i/3)*3 + j/3) for j in range(9)]
+        def checkUniqness(block, n):
+            lc = None
+            for c in block:
+                if c.values == n:
+                    return
+                elif type(c.values) == list and c.values.__contains__(n):
+                    if lc != None:
+                        return
+                    lc = c
+            if lc != None:
+                lc.set(n)
+                #print 'L2:', (lc.x, lc.y), n
+                return True
 
-            for n in range(1, 10):
-                s = 0
-                lf = None
-                for f in bolke:
-                    if type(f.possible) == int:
-                        if f.possible == n:
-                            s = 0
-                            break
-                    elif f.possible.__contains__(n):
-                        lf = f
-                        s += 1
-                    if s > 1:
-                        break
-                if s == 1:
+        '''for block in self.grid.blocks():
+            for n in range(1, self.vrange+1):
+                checkUniqness(block, n)'''
+        for line in self.grid.lines():
+            for n in range(1, self.vrange+1):
+                if checkUniqness(line, n):
                     results = True
-                    lf.set(n)
+                if self.grid.IS_FALSE:
+                    return False
         return results
 
     def ThirdLevel(self):
         results = False
-        for i in range(9):
-            bolke = [self.get((i%3)*3 + j%3, (i/3)*3 + j/3) for j in range(9)]
+        def checkAlignment(block, n):
+            cs = []
+            for c in block:
+                if c.values == n:
+                    return
+                elif type(c.values) == list and c.values.__contains__(n):
+                    cs.append(c)
+            if len(cs) == 1:
+                cs[0].set(n)
+                #print 'L2.5:', (cs[0].x, cs[0].y), n
+                return True
+            elif len(cs) > 1:
+                if all(c.x == cs[0].x for c in cs):
+                    for j in range(self.vrange):
+                        if any(c.y == j for c in cs):
+                            continue
+                        ff = self.grid.get(cs[0].x, j)
+                        if type(ff.values) == list and ff.values.__contains__(n):
+                            results = True
+                            ff.reduce(n)
+                            #print 'L3_r:', (ff.x, ff.y), n
+                elif all(c.y == cs[0].y for c in cs[:]):
+                    for j in range(self.vrange):
+                        if any(c.x == j for c in cs):
+                            continue
+                        ff = self.grid.get(j, cs[0].y)
+                        if type(ff.values) == list and ff.values.__contains__(n):
+                            results = True
+                            ff.reduce(n)
+                            #print 'L3_c:', (ff.x, ff.y), n
 
-            for n in range(1, 10):
-                fs = []
-                for f in bolke:
-                    if type(f.possible) == int:
-                        if f.possible == n:
-                            f = []
-                            break
-                    elif f.possible.__contains__(n):
-                        fs.append(f)
-                if len(fs) == 2:
-                    if fs[0].x == fs[1].x:
-                        for j in range(9):
-                            if [fs[0].y, fs[1].y].__contains__(j):
-                                continue
-                            ff = self.get(fs[0].x, j)
-                            if type(ff.possible) != int and ff.possible.__contains__(n):
-                                results = True
-                                ff.remove(n)
-
-                    if fs[0].y == fs[1].y:
-                        for j in range(9):
-                            if [fs[0].x, fs[1].x].__contains__(j):
-                                continue
-                            ff = self.get(j, fs[0].y)
-                            if type(ff.possible) != int and ff.possible.__contains__(n):
-                                results = True
-                                ff.remove(n)
-
-                if len(fs) == 3:
-                    if fs[0].x == fs[1].x and fs[1].x == fs[2].x:
-                        for j in range(9):
-                            if [fs[0].y, fs[1].y, fs[2].y].__contains__(j):
-                                continue
-                            ff = self.get(fs[0].x, j)
-                            if type(ff.possible) != int and ff.possible.__contains__(n):
-                                results = True
-                                ff.remove(n)
-
-                    if fs[0].y == fs[1].y and fs[1].y == fs[2].y:
-                        for j in range(9):
-                            if [fs[0].x, fs[1].x, fs[2].x].__contains__(j):
-                                continue
-                            ff = self.get(j, fs[0].y)
-                            if type(ff.possible) != int and ff.possible.__contains__(n):
-                                results = True
-                                ff.remove(n)
-
-
+        for block in self.grid.blocks():
+            for n in range(self.vrange):
+                if checkAlignment(block, n):
+                    results = True
+                if self.grid.IS_FALSE:
+                    return False
         return results
 
     def FourthLevel(self):
@@ -126,6 +212,9 @@ class Solver:
 
     def FifthLevel(self):
         results = False
+
+        return False
+
         # rows
         for y in range(9):
             pos = {}
@@ -179,10 +268,25 @@ class Solver:
 
         return results
 
+    def ForceLevel(self):
+        gridcp = copy.deepcopy(self.grid)
+
+        for c in self.grid.cells:
+            if type(c.values) == list:
+                if not silent: print "ForceLevel:", c.x, c.y
+                self.forceFrames.append((gridcp, c.x, c.y, c.values[0]))
+                c.set(c.values[0])
+                return
+
+    def popForceFrame(self):
+        if not silent: print 'popForceFrame', len(self.forceFrames)
+        frame = self.forceFrames.pop()
+        self.grid = frame[0]
+        self.grid.reduce(frame[1], frame[2], frame[3])
+
     def useMethods(self, methodLimit=None):
-        c = 0
         if not methodLimit: methodLimit = 5
-        while not self.DONE:
+        while True:
             giveUp = True
 
             if methodLimit > 1 and self.SecondLevel():
@@ -193,94 +297,39 @@ class Solver:
                 if not silent: print 'Third level'
                 giveUp = False
 
-            if methodLimit > 3 and giveUp and self.FourthLevel():
+            '''if methodLimit > 3 and giveUp and self.FourthLevel():
                 if not silent: print 'Fourth level'
                 giveUp = False
 
             if methodLimit > 4 and giveUp and self.FifthLevel():
                 if not silent: print 'Fifth level'
                 giveUp = False
+            '''
 
-            if giveUp:
-                if not silent: print 'Gives Up'
-                break
+            if giveUp and not self.grid.IS_FALSE:
+                self.ForceLevel()
 
-class Field:
-    def __init__(self, solver, x, y):
-        self.possible = [i+1 for i in range(9)]
-        self.solver = solver
-        self.index = x + y * 9
-        self.x = x
-        self.y = y
-        self.wrong = False
+            if self.grid.IS_FALSE:
+                if len(self.forceFrames) > 0:
+                    self.popForceFrame()
+                else:
+                    break
+            elif self.grid.IS_DONE:
+                self.solutions.append(self.grid)
+                if len(self.forceFrames) > 0:
+                    self.popForceFrame()
+                else:
+                    break
 
-    def set(self, value):
-        if type(self.possible) == int:
-            if value != self.possible:
-                self.wrong = True
-            return
-        if type(value) == list:
-            for v in self.possible[:]:
-                if not value.__contains__(v):
-                    self.remove(v)
-            return
+def solve(values, dim=(3,3), methodLimit=None):
+    return Solver(values, dim).solve(methodLimit)
 
-        self.possible = value
-        self.solver.filld += 1
-        self.solver.DONE = self.solver.filld >= 81
-
-        self.solver.onSet(self)
-
-        for i in range(9):
-            self.solver.Fields[self.x/3*3 + i%3 + (self.y/3*3 + i/3)*9].remove(value, self)
-            if i != self.x: self.solver.Fields[i + self.y*9].remove(value)
-            if i != self.y: self.solver.Fields[self.x + i*9].remove(value)
-
-    def open(self):
-        self.possible = [i+1 for i in range(9)]
-        self.solver.filld -= 1
-        self.solver.DONE = self.solver.filld >= 81
-
-    def get(self):
-        if type(self.possible) == int:
-            return self.possible
-        return None
-
-    def remove(self, value, other=None):
-        if self == other:
-            return
-        if type(self.possible) == int:
-            if value == self.possible:
-                self.wrong = True
-            return
-        if self.possible.__contains__(value):
-            self.possible.remove(value)
-        if len(self.possible) == 1:
-            self.set(self.possible[0])
-
-    def value(self):
-        if self.get():
-            return self.get()
-        else:
-            return self.possible
-
-def solve(values, dim=(9,9), methodLimit=None):
-    solver = Solver(dim)
-
-    for f, v in zip(solver.Fields, values):
-        try: v = int(v)
-        except ValueError: continue
-        f.set(v)
-
-    solver.useMethods(methodLimit)
-
-    i = 0
-    for f in solver.Fields:
-        if f.wrong:
-            values[i] = '*'+str(f.get())+'*'
-        elif f.get():
-            values[i] = str(f.get())
-        else:
-            values[i] = str(f.possible)
-        i += 1
-    return solver.DONE
+if __name__ == '__main__':
+    g = Grid((2,3))
+    g.set(0,0, 1)
+    g.set(1,1, 2)
+    g.set(2,2, 3)
+    g.set(3,3, 4)
+    g.set(4,4, 5)
+    g.set(5,5, 6)
+    print g

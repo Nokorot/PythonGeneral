@@ -7,9 +7,13 @@ from Colors import *
 from vec import *
 from screen import Screen, makeRect
 
+from serverClient import ServerClient
+
 class GameMain:
     def __init__(self, myApp, screenSize):
         pygame.init()
+        self.serverClient = ServerClient(self)
+        self.serverClient.start(1/2.5)
 
         self.screen = Screen(*screenSize)
         self.screen.background = dark_gray
@@ -26,6 +30,7 @@ class GameMain:
     def stop(self):
         self.myApp.close()
         self.sync.stop()
+        self.serverClient.stop()
         sys.exit()
 
     def mainLoop(self):

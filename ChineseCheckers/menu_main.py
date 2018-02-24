@@ -1,6 +1,8 @@
 
 import pygame
 
+from threading import Thread, current_thread
+from time import time, sleep
 
 from Colors import *
 from gui import *
@@ -8,6 +10,7 @@ from gui import *
 from main import ScreenSize
 #import options
 
+from serverClient import ConnectionState as cs
 from game import MakeNewGame, ConnectToGame
 
 class MainMenu(Gui):
@@ -39,20 +42,34 @@ class MainMenu(Gui):
         self.addComponent(quiteB)
 
         rec = Rectangle((self.width - 150, 10, 140, 30))
-        text = 'Online!' if self.serverClient.online else 'Offline!'
+        text = 'Connecting'#'Online!' if self.serverClient.online else 'Offline!'
+
         self.onlineL = Label(rec, text)
-        self.onlineL.fColor = green if self.serverClient.online else red
+        self.onlineL.fColor = blue#green if self.serverClient.online else red
         self.addComponent(self.onlineL)
+
+        def connection_feedback():
+            self.onlineL.name = {
+                cs.DISCONECTED: "Offline!",
+                cs.CONNECTED:   "Online!",
+                cs.CONNECTING:  "Connecting"
+            }[self.serverClient.state]
+            self.onlineL.fColor = {
+                cs.DISCONECTED: red,
+                cs.CONNECTED:   green,
+                cs.CONNECTING:  blue
+            }[self.serverClient.state]
+        self.serverClient.on_connection_control.append(connection_feedback)
 
     def mainMenu(self):
         self.menu = None
 
     def makeNewGame(self):
-        if self.serverClient.online:
+        if self.serverClient.isConnected():
             self.menu = self.newGameMenu
 
     def connectToGame(self, b=True):
-        if self.serverClient.online:
+        if self.serverClient.isConnected():
             self.menu = self.connectMenu
 
     def update(self):
@@ -156,7 +173,7 @@ class ConnectMenu(Gui):
         self.mainMenu = mainMenu
         self.serverClient = mainMenu.serverClient
 
-        grid = self.getGrid([1,2,1],[2,0.5,1,1,1,2],10)
+        grid = self.getGrid([1,2,1],[2,1,1,1,2],10)
         #grid.getPos(1,1)
 
         gameL = Label(grid.getRect(1, 1), 'Game')
@@ -168,11 +185,11 @@ class ConnectMenu(Gui):
         self.gameTF.action = lambda tf: self.play()
         self.addComponent(self.gameTF)
 
-        playB = Button(grid.getRect(1,3), 'Play')
+        playB = Button(grid.getRect(1,2), 'Play')
         playB.action = lambda button: ( self.play() )
         self.addComponent(playB)
 
-        cancelB = Button(grid.getRect(1,4), 'Cancel')
+        cancelB = Button(grid.getRect(1,3), 'Cancel')
         cancelB.action = lambda button: ( mainMenu.mainMenu() )
         self.addComponent(cancelB)
 

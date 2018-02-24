@@ -1,15 +1,36 @@
 
+from enum import Enum
 import urllib2
 
+class ConnectionState(Enum):
+    DISCONECTED = 0
+    CONNECTED   = 1
+    CONNECTING  = 2
+
 class ServerClient():
-    #url = 'http://127.0.0.1:5000/chinice_checers/'
-    url = 'https://minigameshost.herokuapp.com/chinice_checers/'
+    url = 'http://127.0.0.1:5000/chinice_checers/'
+    #url = 'https://minigameshost.herokuapp.com/chinice_checers/'
 
-    def __init__(self):
+    def __init__(self, gMain):
         self.children = []
+        self.gMain = gMain
 
-        self.online = self.request('connectionTest') != None
+        self.state = ConnectionState.DISCONECTED
         self.sync = None
+        self.on_connection_control = []
+
+    def connection_control(self):
+        if self.state == ConnectionState.DISCONECTED:
+            self.state = ConnectionState.CONNECTING
+        responce = self.request('connectionTest')
+        if responce and str(responce).startswith('[0]'):
+            self.state = ConnectionState.CONNECTED
+        else:
+            self.state = ConnectionState.DISCONECTED
+        map(apply, self.on_connection_control)
+
+    def isConnected(self):
+        return self.state == ConnectionState.CONNECTED
 
     def add(self, child):
         self.children.append(child)
@@ -22,11 +43,15 @@ class ServerClient():
         self.sync.sync()
 
     def stop(self):
-        self.sync.stop()
+        self.shutdown = True
+        if self.sync:
+            self.sync.stop()
 
     def update(self):
-        for child in self.children:
-            child.update()
+        self.connection_control()
+        if self.state == ConnectionState.CONNECTED:
+            for child in self.children:
+                child.update()
 
     def request(self, *data):
         try:
@@ -50,6 +75,7 @@ class GameClient():
         if respnce == None:
             return
         if not str(respnce).startswith('[0]'):
+            print respnce
             for change in respnce.split('\n'):
                 change = change.split('|')
                 if (change[1] == 'make'):
@@ -61,12 +87,14 @@ class GameClient():
                 elif (change[1] == 'removeColor'):
                     self.game.level.removeColor(int(change[2]))
                 elif (change[1] == 'moveStone'):
-                    a = map(int, change[2].split(','))
-                    b = map(int, change[3].split(','))
+                    path = map(lambda x: map(int, x.split(',')), change[2:])
+                    a,b = path[0], path[-1];
                     A = self.game.level.getTileByCord((a[0], a[1]))
                     B = self.game.level.getTileByCord((b[0], b[1]))
                     A.stone.tile = B
                     A.stone, B.stone = None, A.stone
+                    print path
+                    self.game.level.lastPath = [x[0:2] for x in path]
                 elif (change[1] == 'nextColor'):
                     self.game.nextColor(int(change[2]))
                 elif (change[1] == 'startGame'):

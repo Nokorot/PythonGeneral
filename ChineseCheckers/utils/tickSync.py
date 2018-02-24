@@ -25,7 +25,7 @@ class ThreadedSync(Sync):
         if self.run:
             return
         self.run = True
-        
+
         self.parrentThread = current_thread()
         def run():
             while self.run:

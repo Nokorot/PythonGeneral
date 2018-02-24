@@ -131,12 +131,13 @@ class Game(Application):
     def applyMove(self):
         if self.pathStone == None or len(self.path) <= 1:
             return
-        self.pathStone.tile = self.path[0]
-        self.path[0].stone = self.pathStone
-        print self.serverClient.move(self.path)
-        self.pathStone = None
-        self.path = []
-        self.whoesTurn = -1
+        if self.myColor == self.whoesTurn:
+            self.pathStone.tile = self.path[0]
+            self.path[0].stone = self.pathStone
+            print self.serverClient.move(self.path)
+            self.pathStone = None
+            self.path = []
+            self.whoesTurn = -1
 
 class GameMenu(Gui):
     def __init__(self, game, bounds):
@@ -151,6 +152,7 @@ class GameMenu(Gui):
 
         self.applyB = Button(Rectangle((25, 75, 150, 50)), 'Apply Move')
         self.applyB.action = lambda x: game.applyMove()
+        self.applyB.visible = False
 
         self.colorBs = []
         for color in range(1,7):
@@ -164,7 +166,10 @@ class GameMenu(Gui):
 
     def makeHost(self):
         self.startB = Button(Rectangle((25, 75, 150, 50)), 'Start Game')
-        self.startB.action = lambda x: self.game.serverClient.gRequest("startGame")
+        def start(x):
+            print self.game.serverClient.gRequest("startGame")
+            print 'Start Game'
+        self.startB.action = start
         self.addComponent(self.startB)
 
         self.gameID = TextField(Rectangle((ScreenWidth - 205, 50, 180, 75)), 'Game ID', self.game.serverClient.gameId)
@@ -183,6 +188,8 @@ class GameMenu(Gui):
 
     def nextColor(self, color):
         self.stone.setColor(color)
+        print self.game.myColor, color
+        self.applyB.visible = self.game.myColor == color
 
     def EventAction(self, event):
         if not self.game.gameStarted:
@@ -199,6 +206,20 @@ class GameMenu(Gui):
                 cb.pos = s / len(self.game.level.tiles[cb.color])
                 cb.Render(screen, None)
 
+class PathTrace(Entity):
+    color = red
+    def __init__(self, level):
+        Entity.__init__(self, (0,0))
+        self.level = level
+
+    def Render(self, screen, pos):
+        def calcPos(x, y):
+            xa, ya = self.level.cords2Pos(x,y)
+            return xa + self.level.getPos()[0], ya + self.level.getPos()[1]
+        if self.level.lastPath:
+            for a,b in zip(self.level.lastPath, self.level.lastPath[1:]):
+                screen.line(self.color, calcPos(*a), calcPos(*b), width=5)
+
 class Level(Entity):
 
     def __init__(self, game):
@@ -208,6 +229,8 @@ class Level(Entity):
 
         self.tiles = {}
         self.stones = []
+        self.lastPath = None
+        self.add(PathTrace(self))
 
         self.time = 0;
 
@@ -367,7 +390,6 @@ class Stone(Entity):
             self.setColor(color)
         self.tile = None
         self.selected = False
-
 
     def setColor(self, color):
         global stoneSpriteScheet;

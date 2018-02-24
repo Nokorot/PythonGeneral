@@ -32,6 +32,7 @@ class Button(Component):
         self.action = printAction
         self.draw = rectButton
 
+        self.visible = True
         self.selected = False
 
     def getSize(self):
@@ -41,9 +42,11 @@ class Button(Component):
         self.action(self)
 
     def render(self, screen):
-        self.draw(screen, self)
+        if self.visible:
+            self.draw(screen, self)
 
     def EventAction(self, event):
+        if not self.visible: return False
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.contains(Vec2(event.pos) - self.parent.getPos()):
                 pass#self.parent.select(self)

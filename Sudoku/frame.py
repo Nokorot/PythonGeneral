@@ -150,10 +150,15 @@ class Save:
             f.write( '\n$ %s, %s' % (level.name, '%ix%i' % (level.width, level.height) ) )
             for y in xrange(level.height):
                 f.write('\n')
-                for x in xrange(level.width):
+                e = level.values[y*level.width:(y+1)*level.width]
+                e = ['_' if v=='' else v for v in e]
+                print
+                f.write(' '.join(e))
+                '''for x in xrange(level.width):
                     e = level.values[x + y*level.width]
                     f.write( '_' if e=='' else e )
                     f.write(' ')
+                '''
             f.write('\n')
 
     def read(self):
