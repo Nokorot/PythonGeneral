@@ -160,10 +160,10 @@ def func(e):
     return int(e.Start()) < 20170101000000
 
 #def hapendsBefore(time):
+if __name__ == "__main__":
+    ICS = ICSData(file="file.ics")
+    cal = ICS.calendar()
+    cal.removeE(func)
 
-ICS = ICSData(file="file.ics")
-cal = ICS.calendar()
-cal.removeE(func)
-
-ICS.writeFile("out2.ics")
+    ICS.writeFile("out2.ics")
 #print cal

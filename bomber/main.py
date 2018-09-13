@@ -13,7 +13,7 @@ import game
 import screen
 
 SpriteSize = 64
-ScreenSize = IVec(11, 7)
+ScreenSize = IVec(19, 9)
 ScreenPSize = ScreenSize * SpriteSize
 
 class GameMain:

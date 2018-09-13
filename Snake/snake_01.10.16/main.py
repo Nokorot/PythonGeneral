@@ -63,7 +63,6 @@ class GameMain:
         }[self.gameState]
 
 
-import input
 if __name__ == "__main__":
     dificolty = 3#input.rawIntInput('Dificolty[0-5]: ', 0, 5, )
 
