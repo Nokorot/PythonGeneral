@@ -50,7 +50,7 @@ class Vec():
     def __mul__(self, other):
         return self.operator(other, lambda a,b: a * b)
 
-    def __div__(self, other):
+    def __truediv__(self, other):
         return self.operator(other, lambda a,b: a / b)
 
     def __eq__(self, other):

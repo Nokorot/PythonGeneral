@@ -86,7 +86,7 @@ class Level(Entity):
                 index+=1
 
             if len(free) < 1:
-                print 'GAME OVER'
+                print('GAME OVER')
                 return
 
             rand = random.choice(free)
@@ -147,7 +147,7 @@ class Tile(Entity):
     def Update(self):
         if (self.pos != self.newPos):
             delta = (self.newPos - self.pos)
-            if (delta > self.moveSpeed):
+            if (delta.norm() > self.moveSpeed.norm()):
                 self.pos = self.pos + delta.normalize() * self.moveSpeed;
             else:
                 self.pos = self.newPos
