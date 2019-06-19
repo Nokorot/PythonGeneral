@@ -188,12 +188,12 @@ class Pellet():
 
     def draw(self, screen):
         s2 = sSize / 2
-        pygame.draw.circle(screen, self.color, add2(scale2(self.pos, sSize), (s2, s2)), s2)
+        pygame.draw.circle(screen, self.color, add2(scale2(self.pos, sSize), (int(s2), int(s2))), int(s2))
 
     def move(self, ipos=[]):
         p = []
-        for y in range(self.h-1):
-            for x in range(self.w-1):
+        for y in range(int(self.h-1)):
+            for x in range(int(self.w-1)):
                 if not ipos.__contains__((x,y)):
                     p.append((x,y))
         self.pos = p[randint(0, len(p) -1)]

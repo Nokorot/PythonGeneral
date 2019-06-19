@@ -8,7 +8,7 @@ from Colors import *
 from component import Component
 
 def printAction(button):
-    print 'Button %s pressed!' % button.name
+    print('Button %s pressed!' % button.name)
 
 def rectButton(screen, button):
     rect = button.rect

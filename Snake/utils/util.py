@@ -16,7 +16,7 @@ def fromBounds(bounds):
         width = bounds[2]
         height = bounds[3]
     else:
-        print 'Iligele bounds \'%g\'' % bounds
+        print('Iligele bounds \'%g\'' % bounds)
         x = y = width = height = None
     return x, y, width, height
 

@@ -11,7 +11,7 @@ from util import clamp
 from component import Component
 
 def printAction(g):
-    print 'Glider %s changed to %f!' % (g.name, g.value())
+    print('Glider %s changed to %f!' % (g.name, g.value()))
 
 def lineGlider(screen, g):
 

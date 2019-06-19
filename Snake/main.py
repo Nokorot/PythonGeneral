@@ -5,8 +5,8 @@ import pygame
 from pygame.locals import *
 from helpers import *
 
-if not pygame.font: print 'Warning, fonts disabled'
-if not pygame.mixer: print 'Warning, sound disabled'
+if not pygame.font: print('Warning, fonts disabled')
+if not pygame.mixer: print('Warning, sound disabled')
 
 os.chdir(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))))
 sys.path.insert(0, os.path.abspath('utils'))
@@ -69,12 +69,11 @@ class GameMain:
         }[self.gameState]
 
 
-import input
 if __name__ == "__main__":
     width, height = 800, 600
     if len(sys.argv) >= 3:
         width = int(sys.argv[1])
         height = int(sys.argv[2])
-    print width, height
+    print(width, height)
     MainWindow = GameMain(width, height)
     MainWindow.start()

@@ -8,7 +8,7 @@ from Colors import *
 from component import Component
 
 def printAction(textField):
-    print 'TextField %s runs action!' % textField.name
+    print('TextField %s runs action!' % textField.name)
 
 def rectField(screen, textField):
     rect = textField.rect

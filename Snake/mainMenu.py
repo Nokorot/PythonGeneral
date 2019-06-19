@@ -83,7 +83,7 @@ class OptionMenu(Gui):
         self.addComponent(backB)
 
         def action(g):
-            print g.value()
+            print(g.value())
             options.dificolty = g.value()
 
         diffic = Glider(grid.getRect(1,2), '', values=range(1,5+1))

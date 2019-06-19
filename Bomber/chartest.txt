@@ -1,7 +1,0 @@
-
-Hey // line comment
-print 2 + 3 /*
-
-  Some multiline coment
-
-*/l
