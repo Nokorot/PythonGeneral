@@ -1,0 +1,109 @@
+diff --git a/ChineseCheckers/game.py b/ChineseCheckers/game.py
+index f7ae06a..feba493 100644
+--- a/ChineseCheckers/game.py
++++ b/ChineseCheckers/game.py
+@@ -9,7 +9,7 @@ from sprite import SpriteFromFile, ShitFromFile
+ from gui import Rectangle, Gui
+ from button import Button
+ from label import Label
+-from textField import TextField
++from textfield import TextField
+ 
+ from serverClient import GameClient
+ 
+@@ -23,7 +23,8 @@ from main import *
+ def MakeNewGame(mainMenu, levelSize=3):
+     game = Game(mainMenu)
+     game.level.constructLevel(levelSize)
+-    game.serverClient.make(game.level.levelSize)
++    if not game.serverClient.make(game.level.levelSize):
++        return None
+     game.gmenu.makeHost()
+     return game
+ 
+@@ -37,7 +38,7 @@ class Game(Application):
+         Application.__init__(self, mainMenu, (0, 0))
+         self.gameStarted = False
+ 
+-        self.bg = SpriteFromFile('bg 0.jpg')
++        self.bg = SpriteFromFile('bg 6.jpg')
+         self.bg.transform(size=self.bg.scale('fill', ScreenSize/4))
+ 
+         self.stoneSpriteScheet = ShitFromFile('stones 1.png', 3, 2)
+diff --git a/ChineseCheckers/main.py b/ChineseCheckers/main.py
+index 1aa7b3e..acb0713 100644
+--- a/ChineseCheckers/main.py
++++ b/ChineseCheckers/main.py
+@@ -1,6 +1,11 @@
+ #!/usr/bin/python
+ 
+ import os, sys
++import inspect
++#os.chdir(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))))
++
++#sys.path = filter(lambda x: not x.startswith('/usr/lib/python2.7/'), sys.path)
++
+ sys.path.insert(0, os.path.abspath('utils'))
+ sys.path.insert(0, os.path.abspath('quark'))
+ sys.path.insert(0, os.path.abspath('quark/guis'))
+diff --git a/ChineseCheckers/menu_main.py b/ChineseCheckers/menu_main.py
+index 9d9828f..072bf9c 100644
+--- a/ChineseCheckers/menu_main.py
++++ b/ChineseCheckers/menu_main.py
+@@ -164,7 +164,9 @@ class NewGameMenu(Gui):
+             return
+         levelSize = int(self.gameTF.text)
+ 
+-        self.mainMenu.menu = MakeNewGame(self.mainMenu, levelSize)
++        game = MakeNewGame(self.mainMenu, levelSize)
++        if game != None:
++            self.mainMenu.menu = game
+ 
+ class ConnectMenu(Gui):
+     def __init__(self, mainMenu):
+diff --git a/ChineseCheckers/serverClient.py b/ChineseCheckers/serverClient.py
+index 18b0b3a..b7e4608 100644
+--- a/ChineseCheckers/serverClient.py
++++ b/ChineseCheckers/serverClient.py
+@@ -1,15 +1,14 @@
+ 
+-from enum import Enum
+ import urllib2
+ 
+-class ConnectionState(Enum):
++class ConnectionState():
+     DISCONECTED = 0
+     CONNECTED   = 1
+     CONNECTING  = 2
+ 
+ class ServerClient():
+-    url = 'http://127.0.0.1:5000/chinice_checers/'
+-    #url = 'https://minigameshost.herokuapp.com/chinice_checers/'
++    #url = 'http://127.0.0.1:5000/chinice_checers/'
++    url = 'https://minigameshost.herokuapp.com/chinice_checers/'
+ 
+     def __init__(self, gMain):
+         self.children = []
+@@ -57,7 +56,6 @@ class ServerClient():
+         try:
+             return urllib2.urlopen(self.url + '|'.join(map(str, data))).read()
+         except Exception as e:
+-            print e.message
+             return None
+ 
+ class GameClient():
+@@ -103,11 +101,14 @@ class GameClient():
+ 
+     def make(self, levelSize):
+         respnce = self.serverClient.request('initGame', 'make', levelSize)
++        print "*****", respnce, "*****"
+         if respnce != None:
+             data = respnce.split('|')
+             self.gameId = data[0]
+             print "Game ID: %s" % self.gameId
+             self.playerId = data[1]
++            return True
++        return False
+ 
+     def connect(self, gameId):
+         self.gameId = gameId

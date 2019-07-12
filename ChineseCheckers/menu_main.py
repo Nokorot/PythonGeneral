@@ -164,7 +164,9 @@ class NewGameMenu(Gui):
             return
         levelSize = int(self.gameTF.text)
 
-        self.mainMenu.menu = MakeNewGame(self.mainMenu, levelSize)
+        game = MakeNewGame(self.mainMenu, levelSize)
+        if game != None:
+            self.mainMenu.menu = game
 
 class ConnectMenu(Gui):
     def __init__(self, mainMenu):

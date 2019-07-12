@@ -1,0 +1,69 @@
+Only in ChineseCheckers.2/data: bg 6.jpg
+diff -r ChineseCheckers/game.py ChineseCheckers.2/game.py
+12c12
+< from textField import TextField
+---
+> from textfield import TextField
+26c26,27
+<     game.serverClient.make(game.level.levelSize)
+---
+>     if not game.serverClient.make(game.level.levelSize):
+>         return None
+40c41
+<         self.bg = SpriteFromFile('bg 0.jpg')
+---
+>         self.bg = SpriteFromFile('bg 6.jpg')
+Only in ChineseCheckers.2/: game.pyc
+diff -r ChineseCheckers/main.py ChineseCheckers.2/main.py
+3a4,8
+> import inspect
+> #os.chdir(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))))
+> 
+> #sys.path = filter(lambda x: not x.startswith('/usr/lib/python2.7/'), sys.path)
+> 
+Only in ChineseCheckers.2/: main.pyc
+diff -r ChineseCheckers/menu_main.py ChineseCheckers.2/menu_main.py
+167c167,169
+<         self.mainMenu.menu = MakeNewGame(self.mainMenu, levelSize)
+---
+>         game = MakeNewGame(self.mainMenu, levelSize)
+>         if game != None:
+>             self.mainMenu.menu = game
+Only in ChineseCheckers.2/: menu_main.pyc
+Only in ChineseCheckers.2/quark: entity.pyc
+Only in ChineseCheckers.2/quark: gameMain.pyc
+Only in ChineseCheckers.2/quark/guis: button.pyc
+Only in ChineseCheckers.2/quark/guis: component.pyc
+Only in ChineseCheckers.2/quark/guis: glider.pyc
+Only in ChineseCheckers.2/quark/guis: gui.pyc
+Only in ChineseCheckers.2/quark/guis: label.pyc
+Only in ChineseCheckers.2/quark/guis: textfield.pyc
+Only in ChineseCheckers.2/quark: screen.pyc
+Only in ChineseCheckers.2/quark: sprite.pyc
+diff -r ChineseCheckers/serverClient.py ChineseCheckers.2/serverClient.py
+2d1
+< from enum import Enum
+5c4
+< class ConnectionState(Enum):
+---
+> class ConnectionState():
+11,12c10,11
+<     url = 'http://127.0.0.1:5000/chinice_checers/'
+<     #url = 'https://minigameshost.herokuapp.com/chinice_checers/'
+---
+>     #url = 'http://127.0.0.1:5000/chinice_checers/'
+>     url = 'https://minigameshost.herokuapp.com/chinice_checers/'
+60d58
+<             print e.message
+105a104
+>         print "*****", respnce, "*****"
+110a110,111
+>             return True
+>         return False
+Only in ChineseCheckers.2/: serverClient.pyc
+Only in ChineseCheckers.2/: sprite.pyc
+Only in ChineseCheckers.2/utils: Colors.pyc
+Only in ChineseCheckers.2/utils: helpers.pyc
+Only in ChineseCheckers.2/utils: tickSync.pyc
+Only in ChineseCheckers.2/utils: utils.pyc
+Only in ChineseCheckers.2/utils: vec.pyc

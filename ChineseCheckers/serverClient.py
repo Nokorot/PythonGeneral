@@ -1,15 +1,14 @@
 
-from enum import Enum
 import urllib2
 
-class ConnectionState(Enum):
+class ConnectionState():
     DISCONECTED = 0
     CONNECTED   = 1
     CONNECTING  = 2
 
 class ServerClient():
-    url = 'http://127.0.0.1:5000/chinice_checers/'
-    #url = 'https://minigameshost.herokuapp.com/chinice_checers/'
+    #url = 'http://127.0.0.1:5000/chinice_checers/'
+    url = 'https://minigameshost.herokuapp.com/chinice_checers/'
 
     def __init__(self, gMain):
         self.children = []
@@ -57,7 +56,6 @@ class ServerClient():
         try:
             return urllib2.urlopen(self.url + '|'.join(map(str, data))).read()
         except Exception as e:
-            print e.message
             return None
 
 class GameClient():
@@ -103,11 +101,14 @@ class GameClient():
 
     def make(self, levelSize):
         respnce = self.serverClient.request('initGame', 'make', levelSize)
+        print "*****", respnce, "*****"
         if respnce != None:
             data = respnce.split('|')
             self.gameId = data[0]
             print "Game ID: %s" % self.gameId
             self.playerId = data[1]
+            return True
+        return False
 
     def connect(self, gameId):
         self.gameId = gameId

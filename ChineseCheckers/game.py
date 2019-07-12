@@ -9,7 +9,7 @@ from sprite import SpriteFromFile, ShitFromFile
 from gui import Rectangle, Gui
 from button import Button
 from label import Label
-from textField import TextField
+from textfield import TextField
 
 from serverClient import GameClient
 
@@ -23,7 +23,8 @@ from main import *
 def MakeNewGame(mainMenu, levelSize=3):
     game = Game(mainMenu)
     game.level.constructLevel(levelSize)
-    game.serverClient.make(game.level.levelSize)
+    if not game.serverClient.make(game.level.levelSize):
+        return None
     game.gmenu.makeHost()
     return game
 
@@ -37,7 +38,7 @@ class Game(Application):
         Application.__init__(self, mainMenu, (0, 0))
         self.gameStarted = False
 
-        self.bg = SpriteFromFile('bg 0.jpg')
+        self.bg = SpriteFromFile('bg 6.jpg')
         self.bg.transform(size=self.bg.scale('fill', ScreenSize/4))
 
         self.stoneSpriteScheet = ShitFromFile('stones 1.png', 3, 2)

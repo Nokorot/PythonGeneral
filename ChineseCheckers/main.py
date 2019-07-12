@@ -1,6 +1,11 @@
 #!/usr/bin/python
 
 import os, sys
+import inspect
+#os.chdir(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))))
+
+#sys.path = filter(lambda x: not x.startswith('/usr/lib/python2.7/'), sys.path)
+
 sys.path.insert(0, os.path.abspath('utils'))
 sys.path.insert(0, os.path.abspath('quark'))
 sys.path.insert(0, os.path.abspath('quark/guis'))
