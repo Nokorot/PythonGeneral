@@ -10,11 +10,23 @@ from gui import *
 
 sSize = 32
 
+# Arrow keys
+# Left = pygame.K_LEFT #pygame.K_h
+# Right = pygame.K_RIGHT #l
+# Up = pygame.K_UP #k
+# Down = pygame.K_DOWN #j
+
+# Vim keys
+Left = pygame.K_h
+Right = pygame.K_l
+Up = pygame.K_k
+Down = pygame.K_j
+
 class Game():
     def __init__(self, main):
         self.main = main
-        self.w = main.width / sSize
-        self.h = main.height / sSize
+        self.w = main.width // sSize
+        self.h = main.height // sSize
 
         self.bgSprite = pygame.transform.scale(load_image('bg 4.jpg'), (main.width, main.height))
 
@@ -25,7 +37,7 @@ class Game():
 
     def reset(self):
         w, h = self.w, self.h
-        self.snake = Snake(w,h, (w/2, h/2))
+        self.snake = Snake(w,h, (w//2, h//2))
         self.pellet = Pellet(w, h)
         self.isDead = False
         self.paused = False
@@ -69,7 +81,7 @@ class Game():
                 self.paused = not self.paused
             if self.paused: return
 
-            if {K_RIGHT, K_LEFT, K_UP, K_DOWN}.__contains__(event.key):
+            if {Right, Left, Up, Down}.__contains__(event.key):
                 self.snake.turn(event.key)
 
     def drawGame(self, screen):
@@ -151,10 +163,10 @@ class Snake():
 
     def turn(self, key):
         nd = {
-            K_RIGHT: 0,
-            K_UP:    1,
-            K_LEFT:  2,
-            K_DOWN:  3
+            Right: 0,
+            Up:    1,
+            Left:  2,
+            Down:  3
         }[key]
         if not ((nd + self.direct) % 2 == 0 or nd == self.direct):
             self.direct = nd

@@ -3,8 +3,6 @@ def download(url):
     import urllib2
     return urllib2.urlopen(url).read();
 
-#print download("https://www-eng-x.llnl.gov/documents/a_document.txt").read()
-
 def CTB_url_client():
     def __init__(self, url):
         self.url = url
@@ -38,7 +36,7 @@ class Timetable():
 
     def course_by_code(self, code):
         for course in self.courses:
-            print course.full_code
+            print(course.full_code)
             if course.full_code == code:
                 return course
         return None
@@ -46,14 +44,11 @@ class Timetable():
     def export_as_ics(self, filename):
         from icsFormat import Calender, Event
 
-        
-
-
 class Timetable_JSON(Timetable):
     def __init__(self, json_file):
         self.json_file = json_file
         self.reader(json_file)
-        print len(self.events)
+        print(len(self.events))
 
     def reader(self, file):
         import json
@@ -64,8 +59,8 @@ class Timetable_JSON(Timetable):
             self.events.append(event)
 
             '''course = self.course_by_code(event.course[0]['full_code'])
-            print type(course)
-            print str(course)
+            print(type(course))
+            print(str(course))
             if course == None:
                 course = Course(event.course[0])
                 self.courses.append(course)
@@ -75,8 +70,43 @@ class Timetable_JSON(Timetable):
             event.course = course'''
 
 
-url_base = "https://browser.ted.is.ed.ac.uk/generate"
-url_extsn = '?courses%5B%5D=MATH10076_SV1_SEM1&courses%5B%5D=PHYS11019_SV1_SEM1&period=SEM1&format=json'
-url = url_base + url_extsn
+url_base = "https://browser.ted.is.ed.ac.uk/generate?"
+courses = [
+  # "MATH11120_SV1_SEM2",
+  # "MATH11135_SV1_SEM2",
+  # "MATH10080_SV1_SEM2",
+  # "PGPH11099_SV1_SEM2",
+  # "MATH11138_SV1_SEM2",
+  # "MATH11137_SV1_SEM2",
+  # "MATH11201_SV1_SEM2",
+  "MATH11144_SV1_SEM2"
+]
+period = "SEM2" 
 
-Timetable_JSON(download(url))
+url = url_base  \
+        + 'courses=' + ','.join(courses) + '&'\
+        + 'period=' + period + '&'\
+        + 'format=json'
+
+from pprint import pprint
+import json
+data = json.loads(download(url))
+
+pprint(data[0])
+
+ev = {
+    'DTSTART':
+    'DTEND':
+    'SUMMARY': 
+    ''
+}
+    
+
+
+
+
+
+
+
+
+# Timetable_JSON(download(url))

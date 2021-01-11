@@ -27,7 +27,7 @@ class GameMain:
         self.width = width - width % sSize
         self.height = height - height % sSize
 
-        self.screen = pygame.display.set_mode((self.width, self.height))
+        self.screen = pygame.display.set_mode((self.width, self.height), flags=pygame.RESIZABLE)
 
         options.load()
 
