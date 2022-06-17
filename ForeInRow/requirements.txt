@@ -1,4 +1,4 @@
 crypto==1.4.1
 pycrypto>=2.6.1
 pygame>=1.9.1
-numpy==1.13.1
+numpy==1.21.0
